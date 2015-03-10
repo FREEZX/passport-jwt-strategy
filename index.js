@@ -59,7 +59,10 @@ JwtStrategy.prototype.authenticate = function(req, options) {
   var requestHeader = headerName(options.requestArg);
 
   var payload = {};
-  var token = req.param(options.requestArg) || req.get(requestHeader);
+
+  var token = req.param ? req.param(options.requestArg) : false;
+  token = token || req.headers[requestHeader];
+  token = token || (req.cookies ? req.cookies[requestHeader] : false);
 
   if(token){
     payload = jwt.decode(token, options.secret);
