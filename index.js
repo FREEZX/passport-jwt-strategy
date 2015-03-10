@@ -34,7 +34,7 @@ function JwtStrategy(options) {
 util.inherits(JwtStrategy, Strategy);
 
 var headerName = function(requestArg){
-  var requestHeader = _.reduce(requestArg.split(''), function(memo, ch){
+  return _.reduce(requestArg.split(''), function(memo, ch){
     return memo + (ch.toUpperCase() === ch ? '-' + ch.toLowerCase() : ch);
   }, 'x' + (requestArg.charAt(0) === requestArg.charAt(0).toUpperCase() ? '' : '-'));
 };
@@ -62,7 +62,7 @@ JwtStrategy.prototype.authenticate = function(req, options) {
   var token = req.param(options.requestArg) || req.get(requestHeader);
 
   if(token){
-    payload = jwt.decode(token, this._secret);
+    payload = jwt.decode(token, options.secret);
   }
 
   var self = this,
