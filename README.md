@@ -8,7 +8,14 @@ First import the strategy:
 	passport.use(new JwtSession(<Insert secret here>));
 ```
 
-The `options` field can currently take one field: `token`, that can take either `header` or `query` string values (default is `header`), which tells it where to search for the token.
+The `options` field:
+```
+options = {
+  secret: options.secret, //The decoding secret
+  requestKey: options.requestKey || 'user',   //The key in the JWT that defines the user id
+  requestArg: options.requestArg || 'accessToken' /* The parameter name on the HTTP request that refers to the JWT. The middleware will look for this property in the query string, request body, and headers. The header name will be derived from a camelBack representation of the property name. For example, if the requestArg is "accessToken" (the default) then this instance of the middlware will look for the header name "x-access-token" */
+};
+```
 The `header` option looks for it in the `Authorization` request header, and query gets the token from the `token` query parameter.
 
 You can also add a `expires` parameter in your jwt payload, which will deny authorization if the token is expired.

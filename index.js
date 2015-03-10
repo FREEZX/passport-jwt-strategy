@@ -5,6 +5,7 @@
  */
 var pause = require('pause'),
   util = require('util'),
+  _ = require('lodash'),
   Strategy = require('passport-strategy'),
   jwt = require('jwt-simple');
 
@@ -25,6 +26,12 @@ function JwtStrategy(secret) {
  */
 util.inherits(JwtStrategy, Strategy);
 
+var headerName = function(requestArg){
+  var requestHeader = _.reduce(requestArg.split(''), function(memo, ch){
+    return memo + (ch.toUpperCase() === ch ? '-' + ch.toLowerCase() : ch);
+  }, 'x' + (requestArg.charAt(0) === requestArg.charAt(0).toUpperCase() ? '' : '-'));
+};
+
 /**
  * Authenticate request based on the current session state.
  *
@@ -41,15 +48,18 @@ util.inherits(JwtStrategy, Strategy);
 JwtStrategy.prototype.authenticate = function(req, options) {
   if (!req._passport) { return this.error(new Error('passport.initialize() middleware not in use')); }
   options = options || {};
-  options.token = options.token || 'header';
+
+  options = {
+    secret: options.secret,
+    maxAge: options.maxAge || 86400,
+    requestKey: options.requestKey || 'user',
+    requestArg: options.requestArg || 'accessToken'
+  };
+
+  var requestHeader = headerName(options.requestArg);
 
   var payload = {};
-  var token;
-  if(options.token === 'query') {
-    token = req.query.token;
-  } else {
-    token = req.headers.authorization;
-  }
+  var token = req.param(options.requestArg) || req.get(requestHeader);
 
   if(token){
     payload = jwt.decode(token, this._secret);
@@ -62,7 +72,7 @@ JwtStrategy.prototype.authenticate = function(req, options) {
     //       listening for events emitted from request.  For discussion on the
     //       matter, refer to: https://github.com/jaredhanson/passport/pull/106
 
-    
+
     var paused = options.pauseStream ? pause(req) : null;
     req._passport.instance.deserializeUser(su, req, function(err, user) {
       if (err) { return self.error(err); }
