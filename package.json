@@ -1,0 +1,22 @@
+{
+  "name": "passport-jwt-strategy",
+  "version": "1.0.0",
+  "description": "JWT strategy for passport.js, used in nuke.js",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "passport",
+    "jwt",
+    "strategy"
+  ],
+  "author": "Kristijan Trajkovski",
+  "license": "MIT",
+  "dependencies": {
+    "jwt-simple": "^0.2.0",
+    "passport-strategy": "^1.0.0",
+    "pause": "0.0.1",
+    "util": "^0.10.3"
+  }
+}
