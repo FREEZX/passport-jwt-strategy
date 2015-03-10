@@ -15,10 +15,17 @@ var pause = require('pause'),
  *
  * @api public
  */
-function JwtStrategy(secret) {
+function JwtStrategy(options) {
   Strategy.call(this);
   this.name = 'jwt';
-  this._secret = secret;
+  options = options || {};
+
+  this.options = {
+    secret: options.secret,
+    maxAge: options.maxAge || 86400,
+    requestKey: options.requestKey || 'user',
+    requestArg: options.requestArg || 'accessToken'
+  };
 }
 
 /**
@@ -47,14 +54,7 @@ var headerName = function(requestArg){
  */
 JwtStrategy.prototype.authenticate = function(req, options) {
   if (!req._passport) { return this.error(new Error('passport.initialize() middleware not in use')); }
-  options = options || {};
-
-  options = {
-    secret: options.secret,
-    maxAge: options.maxAge || 86400,
-    requestKey: options.requestKey || 'user',
-    requestArg: options.requestArg || 'accessToken'
-  };
+  options = this.options || {};
 
   var requestHeader = headerName(options.requestArg);
 
