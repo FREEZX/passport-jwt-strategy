@@ -57,7 +57,7 @@ JwtStrategy.prototype.authenticate = function(req, options) {
 
   var self = this,
     su = payload.user;
-  if ((su || su === 0) && payload.expiry > Date.now() ) {
+  if ((su || su === 0) && (payload.expires > Date.now() || !payload.expires) ) {
     // NOTE: Stream pausing is desirable in the case where later middleware is
     //       listening for events emitted from request.  For discussion on the
     //       matter, refer to: https://github.com/jaredhanson/passport/pull/106
