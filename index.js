@@ -65,7 +65,11 @@ JwtStrategy.prototype.authenticate = function(req, options) {
   token = token || (req.cookies ? req.cookies[requestHeader] : false);
 
   if(token){
-    payload = jwt.decode(token, options.secret);
+    try {
+      payload = jwt.decode(token, options.secret);
+    } catch(e) {
+      
+    }
   }
 
   var self = this,
