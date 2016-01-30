@@ -5,7 +5,6 @@
  */
 var pause = require('pause'),
   util = require('util'),
-  _ = require('lodash'),
   Strategy = require('passport-strategy'),
   jwt = require('jwt-simple');
 
@@ -34,7 +33,7 @@ function JwtStrategy(options) {
 util.inherits(JwtStrategy, Strategy);
 
 var headerName = function(requestArg){
-  return _.reduce(requestArg.split(''), function(memo, ch){
+  return requestArg.split('').reduce(function(memo, ch){
     return memo + (ch.toUpperCase() === ch ? '-' + ch.toLowerCase() : ch);
   }, 'x' + (requestArg.charAt(0) === requestArg.charAt(0).toUpperCase() ? '' : '-'));
 };
