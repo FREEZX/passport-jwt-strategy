@@ -22,8 +22,8 @@
  class JwtStrategy extends Strategy {
 
  	constructor(options){
- 		this.name = 'jwt';
  		options = options || {};
+ 		this.name = 'jwt';
 
  		this.options = {
  			secret: options.secret,
@@ -31,8 +31,8 @@
  			requestKey: options.requestKey || 'user',
  			requestArg: options.requestArg || 'accessToken'
  		};
+ 		super(this);
 
- 		this.super(this);
  	}
 
 	/**
