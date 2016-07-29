@@ -4,8 +4,8 @@
  * Module dependencies.
  */
  const 	pause = require('pause'),
- 		Strategy = require('passport-strategy'),
- 		jwt = require('jwt-simple');
+ 	Strategy = require('passport-strategy'),
+ 	jwt = require('jwt-simple');
 
  function headerName(requestArg){
  	return requestArg.split('').reduce(function(memo, ch){
@@ -13,15 +13,20 @@
  	}, 'x' + (requestArg.charAt(0) === requestArg.charAt(0).toUpperCase() ? '' : '-'));
  }
 
-
 /**
- * `JwtStrategy` constructor.
- *
- * @api public
- */
- class JwtStrategy extends Strategy {
+* `JwtStrategy` class.
+*
+*/
 
+ class JwtStrategy extends Strategy {
+	
+	/**
+ 	* `JwtStrategy` constructor.
+ 	*
+ 	* @api public
+ 	*/
  	constructor(options){
+ 		super();
  		options = options || {};
  		this.name = 'jwt';
 
@@ -31,7 +36,6 @@
  			requestKey: options.requestKey || 'user',
  			requestArg: options.requestArg || 'accessToken'
  		};
- 		super(this);
 
  	}
 
@@ -68,13 +72,12 @@
  			}
  		}
 
- 		let self = this,
- 		su = payload.user;
+ 		const su = payload.user;
  		if ((su || su === 0) && (payload.expires > Date.now() || !payload.expires) ) {
 
  			const paused = options.pauseStream ? pause(req) : null;
  			req._passport.instance.deserializeUser(su, req, function(err, user) {
- 				if (err) { return self.error(err); }
+ 				if (err) { return super.error(err); }
  				if (!user) {
  					delete req._passport.session.user;
  					self.pass();
@@ -85,13 +88,13 @@
  				}
  				const property = req._passport.instance._userProperty || 'user';
  				req[property] = user;
- 				self.pass();
+ 				super.pass();
  				if (paused) {
  					paused.resume();
  				}
  			});
  		} else {
- 			self.pass();
+ 			super.pass();
  		}
  	}
  }
