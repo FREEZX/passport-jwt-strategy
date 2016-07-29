@@ -53,6 +53,7 @@
 	 * @api protected
  	*/
  	authenticate(req, options){
+ 		let self = this;
  		if (!req._passport) { return this.error(new Error('passport.initialize() middleware not in use')); }
  		options = this.options || {};
 
@@ -77,7 +78,7 @@
 
  			const paused = options.pauseStream ? pause(req) : null;
  			req._passport.instance.deserializeUser(su, req, function(err, user) {
- 				if (err) { return super.error(err); }
+ 				if (err) { return self.error(err); }
  				if (!user) {
  					delete req._passport.session.user;
  					self.pass();
@@ -88,13 +89,13 @@
  				}
  				const property = req._passport.instance._userProperty || 'user';
  				req[property] = user;
- 				super.pass();
+ 				self.pass();
  				if (paused) {
  					paused.resume();
  				}
  			});
  		} else {
- 			super.pass();
+ 			self.pass();
  		}
  	}
  }
