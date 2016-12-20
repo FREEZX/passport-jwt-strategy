@@ -84,7 +84,9 @@ JwtStrategy.prototype.authenticate = function(req, options) {
     req._passport.instance.deserializeUser(su, req, function(err, user) {
       if (err) { return self.error(err); }
       if (!user) {
-        delete req._passport.session.user;
+        if(req._passport && req._passport.session) {
+          delete req._passport.session.user;
+        }
         self.pass();
         if (paused) {
           paused.resume();
