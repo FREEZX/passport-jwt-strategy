@@ -3,41 +3,44 @@
 /**
  * Module dependencies.
  */
- const 	pause = require('pause'),
- 	Strategy = require('passport-strategy'),
- 	jwt = require('jwt-simple');
+const pause = require('pause'),
+	Strategy = require('passport-strategy'),
+	{ promisify } = require('util'),
+	jwt = require('jsonwebtoken'),
+	JWTVerify = promisify(jwt.verify).bind(jwt);
 
- function headerName(requestArg){
- 	return requestArg.split('').reduce(function(memo, ch){
- 		return memo + (ch.toUpperCase() === ch ? '-' + ch.toLowerCase() : ch);
- 	}, 'x' + (requestArg.charAt(0) === requestArg.charAt(0).toUpperCase() ? '' : '-'));
- }
+const headerName = (requestArg) => {
+	return requestArg.split('').reduce((memo, ch) => {
+		return memo + (ch.toUpperCase() === ch ? '-' + ch.toLowerCase() : ch);
+	}, 'x' + (requestArg.charAt(0) === requestArg.charAt(0).toUpperCase() ? '' : '-'));
+};
 
 /**
 * `JwtStrategy` class.
 *
 */
 
- class JwtStrategy extends Strategy {
-	
+class JwtStrategy extends Strategy {
+
 	/**
  	* `JwtStrategy` constructor.
  	*
  	* @api public
  	*/
- 	constructor(options){
- 		super();
- 		options = options || {};
- 		this.name = 'jwt';
+	constructor(options) {
+		super();
+		options = options || {};
+		this.name = 'jwt';
 
- 		this.options = {
- 			secret: options.secret,
- 			maxAge: options.maxAge || 86400,
- 			requestKey: options.requestKey || 'user',
- 			requestArg: options.requestArg || 'accessToken'
- 		};
+		this.options = {
+			secret: options.secret,
+			maxAge: options.maxAge || 86400,
+			algorithms: options.algorithms || 'HS256',
+			requestKey: options.requestKey || 'user',
+			requestArg: options.requestArg || 'accessToken'
+		};
 
- 	}
+	}
 
 	/**
 	 * Authenticate request based on the current session state.
@@ -52,56 +55,60 @@
 	 * @param {Object} options
 	 * @api protected
  	*/
- 	authenticate(req, options){
- 		let self = this;
- 		if (!req._passport) { return this.error(new Error('passport.initialize() middleware not in use')); }
- 		options = this.options || {};
+	async authenticate(req, options) {
+		if (!req._passport) {
+			return this.error(new Error('passport.initialize() middleware not in use'));
+		}
 
- 		const requestHeader = headerName(options.requestArg);
+		options = this.options || {};
 
- 		let payload = {};
+		const requestHeader = headerName(options.requestArg);
 
- 		let token = req.query ? req.query[options.requestArg] : false;
- 		token = token || req.headers[requestHeader];
- 		token = token || (req.cookies ? req.cookies[requestHeader] : false);
+		let payload = {};
 
- 		if(token){
- 			try {
- 				payload = jwt.decode(token, options.secret);
- 			} catch(e) {
+		let token = req.query ? req.query[options.requestArg] : false;
+		token = token || req.headers[requestHeader];
+		token = token || (req.cookies ? req.cookies[requestHeader] : false);
 
- 			}
- 		}
+		if (token) {
+			try {
+				payload = await JWTVerify(token, options.secret, options);
+			} catch (e) { }
+		}
 
- 		const su = payload.user;
- 		if ((su || su === 0) && (payload.expires > Date.now() || !payload.expires) ) {
+		const su = payload.user;
+		if ((su || su === 0) && (payload.exp > Date.now() || !payload.exp)) {
 
- 			const paused = options.pauseStream ? pause(req) : null;
- 			req._passport.instance.deserializeUser(su, req, function(err, user) {
- 				if (err) { return self.error(err); }
- 				if (!user) {
- 					delete req._passport.session.user;
- 					self.pass();
- 					if (paused) {
- 						paused.resume();
- 					}
- 					return;
- 				}
- 				const property = req._passport.instance._userProperty || 'user';
- 				req[property] = user;
- 				self.pass();
- 				if (paused) {
- 					paused.resume();
- 				}
- 			});
- 		} else {
- 			self.pass();
- 		}
- 	}
- }
+			const paused = options.pauseStream ? pause(req) : null;
+			req._passport.instance.deserializeUser(su, req, (err, user) => {
+				if (err) {
+					return this.error(err);
+				}
+				if (!user) {
+					if (req._passport && req._passport.session) {
+						delete req._passport.session.user;
+					}
+					this.pass();
+					if (paused) {
+						paused.resume();
+					}
+					return;
+				}
+				const property = req._passport.instance._userProperty || 'user';
+				req[property] = user;
+				this.pass();
+				if (paused) {
+					paused.resume();
+				}
+			});
+		} else {
+			this.pass();
+		}
+	}
+}
 
 
 /**
  * Expose `JwtStrategy`.
  */
- module.exports = JwtStrategy;
+module.exports = JwtStrategy;

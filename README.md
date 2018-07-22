@@ -12,13 +12,15 @@ The `options` field:
 ```
 options = {
   secret: options.secret, //The decoding secret
+  maxAge: options.maxAge || 86400,
+	algorithms: options.algorithms || 'HS256',
   requestKey: options.requestKey || 'user',   //The key in the JWT that defines the user id
   requestArg: options.requestArg || 'accessToken' /* The parameter name on the HTTP request that refers to the JWT. The middleware will look for this property in the query string, request body, and headers. The header name will be derived from a camelBack representation of the property name. For example, if the requestArg is "accessToken" (the default) then this instance of the middlware will look for the header name "x-access-token" */
 };
 ```
 The `header` option looks for it in the `Authorization` request header, and query gets the token from the `token` query parameter.
 
-You can also add a `expires` parameter in your jwt payload, which will deny authorization if the token is expired.
+You can also add a `exp` parameter in your jwt payload, which will deny authorization if the token is expired.
 
 After `passport.initialize()`, place `app.use(passport.authenticate('jwt', options));`
 
