@@ -68,12 +68,16 @@ class JwtStrategy extends Strategy {
 
 		let token = req.query ? req.query[options.requestArg] : false;
 		token = token || req.headers[requestHeader];
-		token = token || (req.cookies ? req.cookies[requestHeader] : false);
+		token = token || (req.signedCookies ? req.signedCookies[options.requestArg] : false);
+		token = token || (req.cookies ? req.cookies[options.requestArg] : false);
 
 		if (token) {
 			try {
 				payload = await JWTVerify(token, options.secret, options);
-			} catch (e) { }
+			// eslint-disable-next-line no-empty
+			} catch (e) { 
+				
+			}
 		}
 
 		const su = payload.user;
