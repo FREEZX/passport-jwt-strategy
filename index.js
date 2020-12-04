@@ -9,24 +9,23 @@ const pause = require('pause'),
 	jwt = require('jsonwebtoken'),
 	JWTVerify = promisify(jwt.verify).bind(jwt);
 
-const headerName = (requestArg) => {
+const headerName = requestArg => {
 	return requestArg.split('').reduce((memo, ch) => {
 		return memo + (ch.toUpperCase() === ch ? '-' + ch.toLowerCase() : ch);
 	}, 'x' + (requestArg.charAt(0) === requestArg.charAt(0).toUpperCase() ? '' : '-'));
 };
 
 /**
-* `JwtStrategy` class.
-*
-*/
+ * `JwtStrategy` class.
+ *
+ */
 
 class JwtStrategy extends Strategy {
-
 	/**
- 	* `JwtStrategy` constructor.
- 	*
- 	* @api public
- 	*/
+	 * `JwtStrategy` constructor.
+	 *
+	 * @api public
+	 */
 	constructor(options) {
 		super();
 		options = options || {};
@@ -37,9 +36,8 @@ class JwtStrategy extends Strategy {
 			maxAge: options.maxAge || 86400,
 			algorithms: options.algorithms || 'HS256',
 			requestKey: options.requestKey || 'user',
-			requestArg: options.requestArg || 'accessToken'
+			requestArg: options.requestArg || 'accessToken',
 		};
-
 	}
 
 	/**
@@ -54,7 +52,7 @@ class JwtStrategy extends Strategy {
 	 * @param {Object} req
 	 * @param {Object} options
 	 * @api protected
- 	*/
+	 */
 	async authenticate(req, options) {
 		if (!req._passport) {
 			return this.error(new Error('passport.initialize() middleware not in use'));
@@ -74,15 +72,12 @@ class JwtStrategy extends Strategy {
 		if (token) {
 			try {
 				payload = await JWTVerify(token, options.secret, options);
-			// eslint-disable-next-line no-empty
-			} catch (e) { 
-				
-			}
+				// eslint-disable-next-line no-empty
+			} catch (e) {}
 		}
 
 		const su = payload.user;
 		if ((su || su === 0) && (payload.exp > Date.now() || !payload.exp)) {
-
 			const paused = options.pauseStream ? pause(req) : null;
 			req._passport.instance.deserializeUser(su, req, (err, user) => {
 				if (err) {
@@ -110,7 +105,6 @@ class JwtStrategy extends Strategy {
 		}
 	}
 }
-
 
 /**
  * Expose `JwtStrategy`.
