@@ -8,6 +8,6 @@ declare interface StrategyOptions {
 	requestArg?: string;
 }
 
-declare class PassportJwtStrategy extends Strategy {
+declare class JwtStrategy extends Strategy {
 	constructor(StrategyOptions);
 }
